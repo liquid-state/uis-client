@@ -1,6 +1,6 @@
 {
   "name": "@liquid-state/uis-client",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Client Library for User Information Service (uis)",
   "files": [
     "dist/"
@@ -19,7 +19,6 @@
     "url": "git+https://github.com/liquid-state/uis-client.git"
   },
   "author": "Liquid State <dev@liquid-state.com>",
-  "license": "MIT",
   "bugs": {
     "url": "https://github.com/liquid-state/uis-client/issues"
   },
