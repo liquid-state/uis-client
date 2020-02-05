@@ -53,6 +53,25 @@ describe("UIS Admin Client", () => {
     });
   });
 
+  it("Should retrieve a list of App Users with pagination", async () => {
+    const f = fetchImpl(TEST_ADMIN_LIST_APPUSERS_RESPONSE);
+    const client = new UISAdminClient(TEST_APP_TOKEN, TEST_JWT, {
+      fetch: f
+    });
+    const resp = await client.listAppUsers(10, 50);
+    expect(resp).toBe(TEST_ADMIN_LIST_APPUSERS_RESPONSE);
+    expect(f).toHaveBeenCalled();
+    expect(f).toHaveBeenCalledWith(
+      `https://uis.example.com/app-users/?limit=10&offset=50`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${TEST_JWT}`
+        }
+      }
+    );
+  });
+
   it("Should create an App User", async () => {
     const f = fetchImpl(TEST_ADMIN_CREATE_APPUSER_RESPONSE);
     const client = new UISAdminClient(TEST_APP_TOKEN, TEST_JWT, {

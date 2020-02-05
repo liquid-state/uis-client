@@ -59,8 +59,36 @@ class UISAdminClient implements IUISAdminClient {
     );
   }
 
-  listAppUsers = async () => {
-    const url = this.getUrl("listAppUsers");
+  private getUrl(
+    endpoint: string,
+    queryStringParameters?: { [key: string]: any }
+  ) {
+    let result;
+    result = `${this.options.baseUrl}${pathMap[endpoint]}`;
+    if (queryStringParameters) {
+      const qsKeys = Object.keys(queryStringParameters);
+      if (qsKeys.length) {
+        const parts = qsKeys.map(k => `${k}=${queryStringParameters[k]}`);
+        result += `?${parts.join("&")}`;
+      }
+    }
+
+    result = result.replace("{{appToken}}", this.appToken);
+    return result;
+  }
+
+  listAppUsers = async (
+    limit?: number | undefined,
+    offset?: number | undefined
+  ) => {
+    let queryStringParams: { [key: string]: any } = {};
+    if (limit) {
+      queryStringParams["limit"] = limit;
+    }
+    if (offset) {
+      queryStringParams["offset"] = offset;
+    }
+    const url = this.getUrl("listAppUsers", queryStringParams);
     const resp = await this.fetch(url, {
       method: "GET",
       headers: {
@@ -113,55 +141,6 @@ class UISAdminClient implements IUISAdminClient {
     const data = await resp.json();
     return data;
   };
-
-  // register = (username: string, password?: string) => {
-  //   const url = this.getUrl("registration");
-  //   const body = new FormData();
-  //   body.append("json_data", JSON.stringify({ username, password }));
-  //   return fetch(url, {
-  //     method: "POST",
-  //     body
-  //   });
-  // };
-
-  // getProfile = async () => {
-  //   const url = this.getUrl("getProfile");
-  //   const resp = await fetch(url, {
-  //     headers: {
-  //       Authorization: `Bearer ${await this.jwt()}`
-  //     }
-  //   });
-  //   if (!resp.ok) {
-  //     throw UISAPIError("Unable to get profile for user", resp);
-  //   }
-  //   const content = await resp.json();
-  //   return content.data;
-  // };
-
-  private getUrl(endpoint: string, useS3 = false) {
-    let result;
-    result = `${this.options.baseUrl}${pathMap[endpoint]}`;
-    result = result.replace("{{appToken}}", this.appToken);
-    return result;
-  }
-
-  // private async jwt() {
-  //   if (!this.options.identity) {
-  //     return undefined;
-  //   }
-  //   if (this.options.identity.jwt) {
-  //     return this.options.identity.jwt;
-  //   }
-  //   return undefined;
-  // }
-
-  // private sub(jwt: string) {
-  //   // Get the body of the JWT.
-  //   const payload = jwt.split(".")[1];
-  //   // Which is base64 encoded.
-  //   const parsed = JSON.parse(atob(payload));
-  //   return parsed.sub;
-  // }
 }
 
 export default UISAdminClient;
