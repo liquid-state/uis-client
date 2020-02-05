@@ -58,11 +58,11 @@ describe("UIS Admin Client", () => {
     const client = new UISAdminClient(TEST_APP_TOKEN, TEST_JWT, {
       fetch: f
     });
-    const resp = await client.listAppUsers(10, 50);
+    const resp = await client.listAppUsers(2);
     expect(resp).toBe(TEST_ADMIN_LIST_APPUSERS_RESPONSE);
     expect(f).toHaveBeenCalled();
     expect(f).toHaveBeenCalledWith(
-      `https://uis.example.com/app-users/?limit=10&offset=50`,
+      `https://uis.example.com/app-users/?page=2`,
       {
         method: "GET",
         headers: {

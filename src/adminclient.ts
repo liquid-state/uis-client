@@ -59,36 +59,19 @@ class UISAdminClient implements IUISAdminClient {
     );
   }
 
-  private getUrl(
-    endpoint: string,
-    queryStringParameters?: { [key: string]: any }
-  ) {
+  private getUrl(endpoint: string, page?: number | undefined) {
     let result;
     result = `${this.options.baseUrl}${pathMap[endpoint]}`;
-    if (queryStringParameters) {
-      const qsKeys = Object.keys(queryStringParameters);
-      if (qsKeys.length) {
-        const parts = qsKeys.map(k => `${k}=${queryStringParameters[k]}`);
-        result += `?${parts.join("&")}`;
-      }
+    if (page) {
+      result += `?page=${page}`;
     }
 
     result = result.replace("{{appToken}}", this.appToken);
     return result;
   }
 
-  listAppUsers = async (
-    limit?: number | undefined,
-    offset?: number | undefined
-  ) => {
-    let queryStringParams: { [key: string]: any } = {};
-    if (limit) {
-      queryStringParams["limit"] = limit;
-    }
-    if (offset) {
-      queryStringParams["offset"] = offset;
-    }
-    const url = this.getUrl("listAppUsers", queryStringParams);
+  listAppUsers = async (page?: number | undefined) => {
+    const url = this.getUrl("listAppUsers", page);
     const resp = await this.fetch(url, {
       method: "GET",
       headers: {
