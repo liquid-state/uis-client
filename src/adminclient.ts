@@ -13,20 +13,21 @@ interface IdentityOptions {}
 
 const defaultOptions = {
   baseUrl: "https://uis.example.com/",
-  fetch: undefined
+  fetch: undefined,
 };
 
 const pathMap: { [key: string]: string } = {
-  listAppUsers: "app-users/",
+  listAllAppUsers: "app-users/",
+  listAppUsersForApp: "apps/{{appToken}}/appusers/",
   createAppUser: "app-users/",
-  createUserRegistrationCode: "codes/"
+  createUserRegistrationCode: "codes/",
 };
 
 const UISError = (message: string) => `UIS Error: ${message}`;
 
 const UISAPIError = (message: string, response: Response) => ({
   message: `UIS API Error: ${message}`,
-  response
+  response,
 });
 
 class UISAdminClient implements IUISAdminClient {
@@ -70,13 +71,13 @@ class UISAdminClient implements IUISAdminClient {
     return result;
   }
 
-  listAppUsers = async (page?: number | undefined) => {
-    const url = this.getUrl("listAppUsers", page);
+  listAppUsersForApp = async (page?: number | undefined) => {
+    const url = this.getUrl("listAppUsersForApp", page);
     const resp = await this.fetch(url, {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${this.jwt}`
-      }
+        Authorization: `Bearer ${this.jwt}`,
+      },
     });
     if (!resp.ok) {
       throw UISAPIError("Unable to get list of App Users", resp);
@@ -84,6 +85,24 @@ class UISAdminClient implements IUISAdminClient {
     const data = await resp.json();
     return data;
   };
+
+  listAllAppUsers = async (page?: number | undefined) => {
+    const url = this.getUrl("listAllAppUsers", page);
+    const resp = await this.fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${this.jwt}`,
+      },
+    });
+    if (!resp.ok) {
+      throw UISAPIError("Unable to get list of App Users", resp);
+    }
+    const data = await resp.json();
+    return data;
+  };
+
+  // for legacy calls
+  listAppUsers = this.listAllAppUsers;
 
   createAppUser = async (profile?: object) => {
     const url = this.getUrl("createAppUser");
@@ -95,9 +114,9 @@ class UISAdminClient implements IUISAdminClient {
     const resp = await this.fetch(url, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${this.jwt}`
+        Authorization: `Bearer ${this.jwt}`,
       },
-      body
+      body,
     });
     if (!resp.ok) {
       throw UISAPIError("Unable to create App User", resp);
@@ -114,9 +133,9 @@ class UISAdminClient implements IUISAdminClient {
     const resp = await this.fetch(url, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${this.jwt}`
+        Authorization: `Bearer ${this.jwt}`,
       },
-      body
+      body,
     });
     if (!resp.ok) {
       throw UISAPIError("Unable to create User Registration Code", resp);

@@ -8,14 +8,14 @@ import {
   TEST_ADMIN_CREATE_APP_USER_PROFILE,
   TEST_ADMIN_CREATE_USER_REGISTRATION_CODE_RESPONSE,
   TEST_ADMIN_APP_USER_URL,
-  TEST_ADMIN_USER_REGISTRATION_CODE
+  TEST_ADMIN_USER_REGISTRATION_CODE,
 } from "./mock_data";
 
 const fetchImpl: any = (response: any, valid: boolean = true) => {
   return jest.fn().mockImplementation((url: string, init: object) => {
     return {
       ok: valid,
-      json: () => response
+      json: () => response,
     };
   });
 };
@@ -40,34 +40,37 @@ describe("UIS Admin Client", () => {
   it("Should retrieve a list of App Users", async () => {
     const f = fetchImpl(TEST_ADMIN_LIST_APPUSERS_RESPONSE);
     const client = new UISAdminClient(TEST_APP_TOKEN, TEST_JWT, {
-      fetch: f
+      fetch: f,
     });
-    const resp = await client.listAppUsers();
+    const resp = await client.listAppUsersForApp();
     expect(resp).toBe(TEST_ADMIN_LIST_APPUSERS_RESPONSE);
     expect(f).toHaveBeenCalled();
-    expect(f).toHaveBeenCalledWith(`https://uis.example.com/app-users/`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${TEST_JWT}`
+    expect(f).toHaveBeenCalledWith(
+      `https://uis.example.com/apps/${TEST_APP_TOKEN}/appusers/`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${TEST_JWT}`,
+        },
       }
-    });
+    );
   });
 
   it("Should retrieve a list of App Users with pagination", async () => {
     const f = fetchImpl(TEST_ADMIN_LIST_APPUSERS_RESPONSE);
     const client = new UISAdminClient(TEST_APP_TOKEN, TEST_JWT, {
-      fetch: f
+      fetch: f,
     });
-    const resp = await client.listAppUsers(2);
+    const resp = await client.listAppUsersForApp(2);
     expect(resp).toBe(TEST_ADMIN_LIST_APPUSERS_RESPONSE);
     expect(f).toHaveBeenCalled();
     expect(f).toHaveBeenCalledWith(
-      `https://uis.example.com/app-users/?page=2`,
+      `https://uis.example.com/apps/${TEST_APP_TOKEN}/appusers/?page=2`,
       {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${TEST_JWT}`
-        }
+          Authorization: `Bearer ${TEST_JWT}`,
+        },
       }
     );
   });
@@ -75,7 +78,7 @@ describe("UIS Admin Client", () => {
   it("Should create an App User", async () => {
     const f = fetchImpl(TEST_ADMIN_CREATE_APPUSER_RESPONSE);
     const client = new UISAdminClient(TEST_APP_TOKEN, TEST_JWT, {
-      fetch: f
+      fetch: f,
     });
     const profile = TEST_ADMIN_CREATE_APP_USER_PROFILE;
     const body = new FormData();
@@ -87,16 +90,16 @@ describe("UIS Admin Client", () => {
     expect(f).toHaveBeenCalledWith(`https://uis.example.com/app-users/`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${TEST_JWT}`
+        Authorization: `Bearer ${TEST_JWT}`,
       },
-      body
+      body,
     });
   });
 
   it("Should create a User Registration Code", async () => {
     const f = fetchImpl(TEST_ADMIN_CREATE_USER_REGISTRATION_CODE_RESPONSE);
     const client = new UISAdminClient(TEST_APP_TOKEN, TEST_JWT, {
-      fetch: f
+      fetch: f,
     });
     const body = new FormData();
     body.append("app_user", TEST_ADMIN_APP_USER_URL);
@@ -110,9 +113,9 @@ describe("UIS Admin Client", () => {
     expect(f).toHaveBeenCalledWith(`https://uis.example.com/codes/`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${TEST_JWT}`
+        Authorization: `Bearer ${TEST_JWT}`,
       },
-      body
+      body,
     });
   });
 });
