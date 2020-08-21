@@ -13,28 +13,26 @@ interface IdentityOptions {
 }
 
 const defaultOptions = {
-  baseUrl: "https://cloud.liquid-state.com/",
-  identity: {}
+  baseUrl: 'https://cloud.liquid-state.com/',
+  identity: {},
 };
 
 const pathMap: { [key: string]: string } = {
-  appPublicConfig: "c/{{companyToken}}/apps/{{appToken}}/app.json",
-  registration: "api/appusers/v1/{{appToken}}/register/",
-  getProfile: "api/appusers/v1/{{appToken}}/profile/",
-  setProfile: "api/appusers/v1/{{appToken}}/profile/set/",
-  appConfig:
-    "c/{{companyToken}}/apps/{{appToken}}/app_users/{{appUserId}}/app_config.json",
+  appPublicConfig: 'c/{{companyToken}}/apps/{{appToken}}/app.json',
+  registration: 'api/appusers/v1/{{appToken}}/register/',
+  getProfile: 'api/appusers/v1/{{appToken}}/profile/',
+  setProfile: 'api/appusers/v1/{{appToken}}/profile/set/',
+  appConfig: 'c/{{companyToken}}/apps/{{appToken}}/app_users/{{appUserId}}/app_config.json',
   messageHistory:
-    "c/{{companyToken}}/apps/{{appToken}}/app_users/{{appUserId}}/messaging/list.json",
-  viewableIssues:
-    "c/{{companyToken}}/apps/{{appToken}}/app_users/{{appUserId}}/app_config.json"
+    'c/{{companyToken}}/apps/{{appToken}}/app_users/{{appUserId}}/messaging/list.json',
+  viewableIssues: 'c/{{companyToken}}/apps/{{appToken}}/app_users/{{appUserId}}/app_config.json',
 };
 
 const UISError = (message: string) => `UIS Error: ${message}`;
 
 const UISAPIError = (message: string, response: Response) => ({
   message: `UIS API Error: ${message}`,
-  response
+  response,
 });
 
 class UISAdminClient implements IUISAdminClient {
@@ -42,7 +40,7 @@ class UISAdminClient implements IUISAdminClient {
 
   constructor(private appToken: string, options?: IOptions) {
     if (!appToken) {
-      throw UISError("You must specify an appToken");
+      throw UISError('You must specify an appToken');
     }
     if (!options) {
       this.options = defaultOptions;
@@ -55,24 +53,24 @@ class UISAdminClient implements IUISAdminClient {
   }
 
   register = (username: string, password?: string) => {
-    const url = this.getUrl("registration");
+    const url = this.getUrl('registration');
     const body = new FormData();
-    body.append("json_data", JSON.stringify({ username, password }));
+    body.append('json_data', JSON.stringify({ username, password }));
     return fetch(url, {
-      method: "POST",
-      body
+      method: 'POST',
+      body,
     });
   };
 
   getProfile = async () => {
-    const url = this.getUrl("getProfile");
+    const url = this.getUrl('getProfile');
     const resp = await fetch(url, {
       headers: {
-        Authorization: `Bearer ${await this.jwt()}`
-      }
+        Authorization: `Bearer ${await this.jwt()}`,
+      },
     });
     if (!resp.ok) {
-      throw UISAPIError("Unable to get profile for user", resp);
+      throw UISAPIError('Unable to get profile for user', resp);
     }
     const content = await resp.json();
     return content.data;
@@ -81,7 +79,7 @@ class UISAdminClient implements IUISAdminClient {
   private getUrl(endpoint: string, useS3 = false) {
     let result;
     result = `${this.options.baseUrl}${pathMap[endpoint]}`;
-    result = result.replace("{{appToken}}", this.appToken);
+    result = result.replace('{{appToken}}', this.appToken);
     return result;
   }
 
@@ -97,7 +95,7 @@ class UISAdminClient implements IUISAdminClient {
 
   private sub(jwt: string) {
     // Get the body of the JWT.
-    const payload = jwt.split(".")[1];
+    const payload = jwt.split('.')[1];
     // Which is base64 encoded.
     const parsed = JSON.parse(atob(payload));
     return parsed.sub;
