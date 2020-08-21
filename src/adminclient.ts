@@ -1,6 +1,7 @@
 interface IUISAdminClient {
   listAppUsers(): Promise<Response>;
   createAppUser(profile?: object): Promise<object>;
+  updateAppUser(appUserId: string, profile: object): Promise<object>;
   createUserRegistrationCode(appUserURL: string, code: string): Promise<object>;
 }
 
@@ -9,18 +10,19 @@ interface IOptions {
   fetch?: typeof fetch;
 }
 
-interface IdentityOptions {}
+interface IdentityOptions { }
 
 const defaultOptions = {
-  baseUrl: "https://uis.example.com/",
+  baseUrl: 'https://uis.example.com/',
   fetch: undefined,
 };
 
 const pathMap: { [key: string]: string } = {
-  listAllAppUsers: "app-users/",
-  listAppUsersForApp: "apps/{{appToken}}/appusers/",
-  createAppUser: "app-users/",
-  createUserRegistrationCode: "codes/",
+  listAllAppUsers: 'app-users/',
+  listAppUsersForApp: 'apps/{{appToken}}/appusers/',
+  createAppUser: 'app-users/',
+  updateAppUser: 'apps/{{appToken}}/appusers/{{appUserId}}',
+  createUserRegistrationCode: 'codes/',
 };
 
 const UISError = (message: string) => `UIS Error: ${message}`;
@@ -34,16 +36,12 @@ class UISAdminClient implements IUISAdminClient {
   private options: IOptions;
   private fetch: typeof fetch;
 
-  constructor(
-    private appToken: string,
-    private jwt: string,
-    options?: IOptions
-  ) {
+  constructor(private appToken: string, private jwt: string, options?: IOptions) {
     if (!appToken) {
-      throw UISError("You must specify appToken");
+      throw UISError('You must specify appToken');
     }
     if (!jwt) {
-      throw UISError("You must specify a JWT");
+      throw UISError('You must specify a JWT');
     }
     if (!options) {
       this.options = defaultOptions;
@@ -54,10 +52,7 @@ class UISAdminClient implements IUISAdminClient {
       }
     }
     this.fetch = this.options.fetch || window.fetch.bind(window);
-    this.options.baseUrl = this.options.baseUrl?.replace(
-      "{{app_ubiquity_token}}",
-      this.appToken
-    );
+    this.options.baseUrl = this.options.baseUrl?.replace('{{app_ubiquity_token}}', this.appToken);
   }
 
   private getUrl(endpoint: string, page?: number | undefined) {
@@ -67,35 +62,35 @@ class UISAdminClient implements IUISAdminClient {
       result += `?page=${page}`;
     }
 
-    result = result.replace("{{appToken}}", this.appToken);
+    result = result.replace('{{appToken}}', this.appToken);
     return result;
   }
 
   listAppUsersForApp = async (page?: number | undefined) => {
-    const url = this.getUrl("listAppUsersForApp", page);
+    const url = this.getUrl('listAppUsersForApp', page);
     const resp = await this.fetch(url, {
-      method: "GET",
+      method: 'GET',
       headers: {
         Authorization: `Bearer ${this.jwt}`,
       },
     });
     if (!resp.ok) {
-      throw UISAPIError("Unable to get list of App Users", resp);
+      throw UISAPIError('Unable to get list of App Users', resp);
     }
     const data = await resp.json();
     return data;
   };
 
   listAllAppUsers = async (page?: number | undefined) => {
-    const url = this.getUrl("listAllAppUsers", page);
+    const url = this.getUrl('listAllAppUsers', page);
     const resp = await this.fetch(url, {
-      method: "GET",
+      method: 'GET',
       headers: {
         Authorization: `Bearer ${this.jwt}`,
       },
     });
     if (!resp.ok) {
-      throw UISAPIError("Unable to get list of App Users", resp);
+      throw UISAPIError('Unable to get list of App Users', resp);
     }
     const data = await resp.json();
     return data;
@@ -105,40 +100,59 @@ class UISAdminClient implements IUISAdminClient {
   listAppUsers = this.listAllAppUsers;
 
   createAppUser = async (profile?: object) => {
-    const url = this.getUrl("createAppUser");
+    const url = this.getUrl('createAppUser');
     const body = new FormData();
-    body.append("app", this.appToken);
+    body.append('app', this.appToken);
     if (profile) {
-      body.append("profile", JSON.stringify(profile));
+      body.append('profile', JSON.stringify(profile));
     }
     const resp = await this.fetch(url, {
-      method: "POST",
+      method: 'POST',
       headers: {
         Authorization: `Bearer ${this.jwt}`,
       },
       body,
     });
     if (!resp.ok) {
-      throw UISAPIError("Unable to create App User", resp);
+      throw UISAPIError('Unable to create App User', resp);
+    }
+    const data = await resp.json();
+    return data;
+  };
+
+  updateAppUser = async (appUserId: string, profile: object) => {
+    const url = this.getUrl('updateAppUser').replace('{{appUserId}}', `${appUserId}`);
+    const body = new FormData();
+    body.append('app', this.appToken);
+    body.append('profile', JSON.stringify(profile));
+    const resp = await this.fetch(url, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${this.jwt}`,
+      },
+      body,
+    });
+    if (!resp.ok) {
+      throw UISAPIError('Unable to update App User', resp);
     }
     const data = await resp.json();
     return data;
   };
 
   createUserRegistrationCode = async (appUserURL: string, code: string) => {
-    const url = this.getUrl("createUserRegistrationCode");
+    const url = this.getUrl('createUserRegistrationCode');
     const body = new FormData();
-    body.append("app_user", appUserURL);
-    body.append("code", code);
+    body.append('app_user', appUserURL);
+    body.append('code', code);
     const resp = await this.fetch(url, {
-      method: "POST",
+      method: 'POST',
       headers: {
         Authorization: `Bearer ${this.jwt}`,
       },
       body,
     });
     if (!resp.ok) {
-      throw UISAPIError("Unable to create User Registration Code", resp);
+      throw UISAPIError('Unable to create User Registration Code', resp);
     }
     const data = await resp.json();
     return data;
