@@ -10,7 +10,7 @@ interface IOptions {
   fetch?: typeof fetch;
 }
 
-interface IdentityOptions {}
+interface IdentityOptions { }
 
 const defaultOptions = {
   baseUrl: 'https://uis.example.com/',
@@ -21,7 +21,7 @@ const pathMap: { [key: string]: string } = {
   listAllAppUsers: 'app-users/',
   listAppUsersForApp: 'apps/{{appToken}}/appusers/',
   createAppUser: 'app-users/',
-  updateAppUser: 'apps/{{appToken}}/appusers/{{appUserId}}',
+  updateAppUser: 'apps/{{appToken}}/appusers/{{appUserId}}/',
   createUserRegistrationCode: 'codes/',
 };
 
