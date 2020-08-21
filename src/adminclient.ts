@@ -10,7 +10,7 @@ interface IOptions {
   fetch?: typeof fetch;
 }
 
-interface IdentityOptions { }
+interface IdentityOptions {}
 
 const defaultOptions = {
   baseUrl: 'https://uis.example.com/',
