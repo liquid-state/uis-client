@@ -1,6 +1,6 @@
 {
   "name": "@liquid-state/uis-client",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Client Library for User Information Service (uis)",
   "files": [
     "dist/"
