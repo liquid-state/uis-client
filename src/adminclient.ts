@@ -120,11 +120,14 @@ class UISAdminClient implements IUISAdminClient {
     return data;
   };
 
-  updateAppUser = async (appUserId: string, profile: object) => {
+  updateAppUser = async (appUserId: string, profile: object, disabled?: boolean) => {
     const url = this.getUrl('updateAppUser').replace('{{appUserId}}', `${appUserId}`);
     const body = new FormData();
     body.append('app', this.appToken);
     body.append('profile', JSON.stringify(profile));
+    if (disabled !== undefined) {
+      body.append('disabled', `${disabled}`);
+    }
     const resp = await this.fetch(url, {
       method: 'PATCH',
       headers: {
