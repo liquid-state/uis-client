@@ -2,7 +2,11 @@ interface IUISAdminClient {
   listAppUsers(): Promise<Response>;
   createAppUser(profile?: object): Promise<object>;
   updateAppUser(appUserId: string, profile: object): Promise<object>;
-  createUserRegistrationCode(appUserURL: string, code: string): Promise<object>;
+  createUserRegistrationCode(
+    appUserURL: string,
+    code: string,
+    additionalContext?: object
+  ): Promise<object>;
 }
 
 interface IOptions {
@@ -142,11 +146,18 @@ class UISAdminClient implements IUISAdminClient {
     return data;
   };
 
-  createUserRegistrationCode = async (appUserURL: string, code: string) => {
+  createUserRegistrationCode = async (
+    appUserURL: string,
+    code: string,
+    additionalContext?: object
+  ) => {
     const url = this.getUrl('createUserRegistrationCode');
     const body = new FormData();
     body.append('app_user', appUserURL);
     body.append('code', code);
+    if (additionalContext !== undefined) {
+      body.append('additional_context', JSON.stringify(additionalContext));
+    }
     const resp = await this.fetch(url, {
       method: 'POST',
       headers: {
