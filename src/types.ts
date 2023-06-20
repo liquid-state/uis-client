@@ -29,21 +29,21 @@ export type AppUserFile = {
   deleted: string | null;
 };
 
-export type ISearchFilesResponse = {
+export type ListFilesResponse = {
   count: number;
   next: string | null;
   previous: string | null;
   results: AppUserFile[];
 };
 
-export type CreateFileOptions = {
+export type CreateFileData = {
   name: string;
   description?: string;
   mimetype: string;
   original_creation_date?: string;
 };
 
-export type UpdateFileOptions = {
+export type UpdateFileData = {
   name?: string;
   description?: string;
   original_creation_date?: string;

@@ -1,4 +1,4 @@
-import { ISearchFilesResponse, CreateFileOptions, AppUserFile, UpdateFileOptions } from './types';
+import { ListFilesResponse, CreateFileData, AppUserFile, UpdateFileData } from './types';
 
 interface IUISAdminClient {
   listAppUsers(): Promise<Response>;
@@ -9,13 +9,13 @@ interface IUISAdminClient {
     code: string,
     additionalContext?: object
   ): Promise<object>;
-  listAppUserFiles(appUserId: string): Promise<ISearchFilesResponse>;
-  createAppUserFile(appUserId: string, options: CreateFileOptions): Promise<AppUserFile>;
+  listAppUserFiles(appUserId: string): Promise<ListFilesResponse>;
+  createAppUserFile(appUserId: string, data: CreateFileData): Promise<AppUserFile>;
   getAppUserFileUploadUrl(file: AppUserFile): Promise<{ url: string }>;
   appUserFileUploadComplete(file: AppUserFile): Promise<AppUserFile>;
   getAppUserFileDownloadUrl(file: AppUserFile): Promise<{ url: string }>;
   deleteAppUserFile(file: AppUserFile): Promise<void>;
-  updateAppUserFile(file: AppUserFile): Promise<AppUserFile>;
+  updateAppUserFile(file: AppUserFile, data: UpdateFileData): Promise<AppUserFile>;
 }
 
 interface IOptions {
@@ -197,7 +197,7 @@ class UISAdminClient implements IUISAdminClient {
     return data;
   };
 
-  createAppUserFile = async (appUserId: string, options: CreateFileOptions) => {
+  createAppUserFile = async (appUserId: string, data: CreateFileData) => {
     const url = this.getUrl('files').replace('{{appUserId}}', `${appUserId}`);
     const resp = await this.fetch(url, {
       method: 'POST',
@@ -205,13 +205,13 @@ class UISAdminClient implements IUISAdminClient {
         Authorization: `Bearer ${this.jwt}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(options),
+      body: JSON.stringify(data),
     });
     if (!resp.ok) {
       throw UISAPIError('Unable to create the app user file', resp);
     }
-    const data = await resp.json();
-    return data;
+    const jsonResp = await resp.json();
+    return jsonResp;
   };
 
   getAppUserFileUploadUrl = async (file: AppUserFile) => {
@@ -222,8 +222,11 @@ class UISAdminClient implements IUISAdminClient {
         Authorization: `Bearer ${this.jwt}`,
       },
     });
+    if (resp.status === 409) {
+      throw UISAPIError('File already uploaded', resp);
+    }
     if (!resp.ok) {
-      throw UISAPIError('Unable to get the app user file upload URL', resp);
+      throw UISAPIError('Unable to get upload url for file', resp);
     }
     const data = await resp.json();
     return data;
@@ -266,30 +269,38 @@ class UISAdminClient implements IUISAdminClient {
         Authorization: `Bearer ${this.jwt}`,
       },
     });
+    if (resp.status === 403) {
+      throw UISAPIError(
+        'The user is not the creator thus does not have the permission to delete the file',
+        resp
+      );
+    }
     if (!resp.ok) {
       throw UISAPIError('Unable to delete the app user file', resp);
     }
     return;
   };
 
-  updateAppUserFile = async (file: AppUserFile) => {
+  updateAppUserFile = async (file: AppUserFile, data: UpdateFileData) => {
     const resp = await this.fetch(file.url, {
       method: 'PUT',
       headers: {
         Authorization: `Bearer ${this.jwt}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        name: file.name,
-        description: file.description,
-        original_creation_date: file.original_creation_date,
-      }),
+      body: JSON.stringify(data),
     });
+    if (resp.status === 403) {
+      throw UISAPIError(
+        'The user is not the creator thus does not have the permission to edit the file',
+        resp
+      );
+    }
     if (!resp.ok) {
       throw UISAPIError('Unable to edit the app user file', resp);
     }
-    const data = await resp.json();
-    return data;
+    const jsonResp = await resp.json();
+    return jsonResp;
   };
 }
 
