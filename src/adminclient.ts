@@ -1,3 +1,5 @@
+import { ListFilesResponse, CreateFileData, AppUserFile, UpdateFileData } from './types';
+
 interface IUISAdminClient {
   listAppUsers(): Promise<Response>;
   createAppUser(profile?: object): Promise<object>;
@@ -7,6 +9,13 @@ interface IUISAdminClient {
     code: string,
     additionalContext?: object
   ): Promise<object>;
+  listAppUserFiles(appUserId: string): Promise<ListFilesResponse>;
+  createAppUserFile(appUserId: string, data: CreateFileData): Promise<AppUserFile>;
+  getAppUserFileUploadUrl(file: AppUserFile): Promise<{ url: string }>;
+  appUserFileUploadComplete(file: AppUserFile): Promise<AppUserFile>;
+  getAppUserFileDownloadUrl(file: AppUserFile): Promise<{ url: string }>;
+  deleteAppUserFile(file: AppUserFile): Promise<void>;
+  updateAppUserFile(file: AppUserFile, data: UpdateFileData): Promise<AppUserFile>;
 }
 
 interface IOptions {
@@ -27,6 +36,7 @@ const pathMap: { [key: string]: string } = {
   createAppUser: 'app-users/',
   updateAppUser: 'apps/{{appToken}}/appusers/{{appUserId}}/',
   createUserRegistrationCode: 'codes/',
+  files: 'app-users/{{appUserId}}/files/',
 };
 
 const UISError = (message: string) => `UIS Error: ${message}`;
@@ -170,6 +180,127 @@ class UISAdminClient implements IUISAdminClient {
     }
     const data = await resp.json();
     return data;
+  };
+
+  listAppUserFiles = async (appUserId: string) => {
+    const url = this.getUrl('files').replace('{{appUserId}}', `${appUserId}`);
+    const resp = await this.fetch(url, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${this.jwt}`,
+      },
+    });
+    if (!resp.ok) {
+      throw UISAPIError('Unable to get app user files', resp);
+    }
+    const data = await resp.json();
+    return data;
+  };
+
+  createAppUserFile = async (appUserId: string, data: CreateFileData) => {
+    const url = this.getUrl('files').replace('{{appUserId}}', `${appUserId}`);
+    const resp = await this.fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.jwt}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    if (!resp.ok) {
+      throw UISAPIError('Unable to create the app user file', resp);
+    }
+    const jsonResp = await resp.json();
+    return jsonResp;
+  };
+
+  getAppUserFileUploadUrl = async (file: AppUserFile) => {
+    const url = `${file.url}upload/`;
+    const resp = await this.fetch(url, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${this.jwt}`,
+      },
+    });
+    if (resp.status === 409) {
+      throw UISAPIError('File already uploaded', resp);
+    }
+    if (!resp.ok) {
+      throw UISAPIError('Unable to get upload url for file', resp);
+    }
+    const data = await resp.json();
+    return data;
+  };
+
+  appUserFileUploadComplete = async (file: AppUserFile) => {
+    const url = `${file.url}upload_complete/`;
+    const resp = await this.fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.jwt}`,
+      },
+    });
+    if (!resp.ok) {
+      throw UISAPIError('Unable to set upload complete on file', resp);
+    }
+    const data = await resp.json();
+    return data;
+  };
+
+  getAppUserFileDownloadUrl = async (file: AppUserFile) => {
+    const url = `${file.url}download/`;
+    const resp = await this.fetch(url, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${this.jwt}`,
+      },
+    });
+    if (!resp.ok) {
+      throw UISAPIError('Unable to get the app user file download URL', resp);
+    }
+    const data = await resp.json();
+    return data;
+  };
+
+  deleteAppUserFile = async (file: AppUserFile) => {
+    const resp = await this.fetch(file.url, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${this.jwt}`,
+      },
+    });
+    if (resp.status === 403) {
+      throw UISAPIError(
+        'The user is not the creator thus does not have the permission to delete the file',
+        resp
+      );
+    }
+    if (!resp.ok) {
+      throw UISAPIError('Unable to delete the app user file', resp);
+    }
+    return;
+  };
+
+  updateAppUserFile = async (file: AppUserFile, data: UpdateFileData) => {
+    const resp = await this.fetch(file.url, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${this.jwt}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    if (resp.status === 403) {
+      throw UISAPIError(
+        'The user is not the creator thus does not have the permission to edit the file',
+        resp
+      );
+    }
+    if (!resp.ok) {
+      throw UISAPIError('Unable to edit the app user file', resp);
+    }
+    const jsonResp = await resp.json();
+    return jsonResp;
   };
 }
 
