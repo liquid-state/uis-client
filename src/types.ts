@@ -48,3 +48,20 @@ export type UpdateFileData = {
   description?: string;
   original_creation_date?: string;
 };
+
+export type EngagementEvent = {
+  timestamp: string;
+  userId: string;
+  sourceType: 'mobile-app' | 'integration';
+  sourceId: string;
+  engagementType: 'app-content' | 'dashboard-content';
+  contentId: string;
+  contentType: 'document' | 'form' | 'message';
+  [k: string]: unknown;
+};
+
+export type CommonMetricDataResponse = {
+  count: number;
+  results: EngagementEvent[];
+  next_offset?: number;
+};

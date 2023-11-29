@@ -4,6 +4,8 @@ import {
   TEST_APP_TOKEN,
   TEST_JWT,
   TEST_ADMIN_LIST_APPUSERS_RESPONSE,
+  TEST_ADMIN_LIST_ENGAGEMENT_DATA,
+  TEST_APP_USER_ID,
   TEST_ADMIN_CREATE_APPUSER_RESPONSE,
   TEST_ADMIN_CREATE_APP_USER_PROFILE,
   TEST_ADMIN_CREATE_USER_REGISTRATION_CODE_RESPONSE,
@@ -63,6 +65,35 @@ describe('UIS Admin Client', () => {
     expect(f).toHaveBeenCalled();
     expect(f).toHaveBeenCalledWith(
       `https://uis.example.com/apps/${TEST_APP_TOKEN}/appusers/?page=2`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${TEST_JWT}`,
+        },
+      }
+    );
+  });
+
+  it('Should retrieve CommonMetric data for an AppUser', async () => {
+    const metricId = 'engagement';
+    const fromTime = '2023-04-20T19:24:37.000Z';
+    const toTime = '2023-08-28T17:43:12.000Z';
+    const offset = 50;
+    const f = fetchImpl(TEST_ADMIN_LIST_ENGAGEMENT_DATA);
+    const client = new UISAdminClient(TEST_APP_TOKEN, TEST_JWT, {
+      fetch: f,
+    });
+    const resp = await client.listCommonMetricforAppUser(
+      metricId,
+      TEST_APP_USER_ID,
+      fromTime,
+      toTime,
+      offset
+    );
+    expect(resp).toBe(TEST_ADMIN_LIST_ENGAGEMENT_DATA);
+    expect(f).toHaveBeenCalled();
+    expect(f).toHaveBeenCalledWith(
+      `https://uis.example.com/apps/${TEST_APP_TOKEN}/metrics/common/${metricId}/data/?app_user_id=${TEST_APP_USER_ID}&from=${fromTime}&to=${toTime}&offset=${offset}`,
       {
         method: 'GET',
         headers: {

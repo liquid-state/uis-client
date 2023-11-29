@@ -1,4 +1,10 @@
-import { ListFilesResponse, CreateFileData, AppUserFile, UpdateFileData } from './types';
+import {
+  ListFilesResponse,
+  CreateFileData,
+  AppUserFile,
+  UpdateFileData,
+  CommonMetricDataResponse,
+} from './types';
 
 interface IUISAdminClient {
   listAppUsers(): Promise<Response>;
@@ -16,6 +22,13 @@ interface IUISAdminClient {
   getAppUserFileDownloadUrl(file: AppUserFile): Promise<{ url: string }>;
   deleteAppUserFile(file: AppUserFile): Promise<void>;
   updateAppUserFile(file: AppUserFile, data: UpdateFileData): Promise<AppUserFile>;
+  listCommonMetricforAppUser(
+    metricId: string,
+    appUserId: string,
+    fromTime?: string,
+    toTime?: string,
+    offset?: number
+  ): Promise<CommonMetricDataResponse>;
 }
 
 interface IOptions {
@@ -37,6 +50,7 @@ const pathMap: { [key: string]: string } = {
   updateAppUser: 'apps/{{appToken}}/appusers/{{appUserId}}/',
   createUserRegistrationCode: 'codes/',
   files: 'app-users/{{appUserId}}/files/',
+  commonMetricData: 'apps/{{appToken}}/metrics/common/{{metricId}}/data/',
 };
 
 const UISError = (message: string) => `UIS Error: ${message}`;
@@ -301,6 +315,31 @@ class UISAdminClient implements IUISAdminClient {
     }
     const jsonResp = await resp.json();
     return jsonResp;
+  };
+
+  listCommonMetricforAppUser = async (
+    metricId: string,
+    appUserId: string,
+    fromTime?: string,
+    toTime?: string,
+    offset?: number
+  ) => {
+    let url = this.getUrl('commonMetricData').replace('{{metricId}}', metricId);
+    url += `?app_user_id=${appUserId}`;
+    url += `${fromTime ? `&from=${fromTime}` : ''}`;
+    url += `${toTime ? `&to=${toTime}` : ''}`;
+    url += `${offset ? `&offset=${offset}` : ''}`;
+    const resp = await this.fetch(url, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${this.jwt}`,
+      },
+    });
+    if (!resp.ok) {
+      throw UISAPIError('Unable to get app user files', resp);
+    }
+    const data = await resp.json();
+    return data;
   };
 }
 
