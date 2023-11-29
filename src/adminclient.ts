@@ -22,7 +22,7 @@ interface IUISAdminClient {
   getAppUserFileDownloadUrl(file: AppUserFile): Promise<{ url: string }>;
   deleteAppUserFile(file: AppUserFile): Promise<void>;
   updateAppUserFile(file: AppUserFile, data: UpdateFileData): Promise<AppUserFile>;
-  listCommonMetricforAppUser(
+  getCommonMetricDataForAppUser(
     metricId: string,
     appUserId: string,
     fromTime?: string,
@@ -317,7 +317,7 @@ class UISAdminClient implements IUISAdminClient {
     return jsonResp;
   };
 
-  listCommonMetricforAppUser = async (
+  getCommonMetricDataForAppUser = async (
     metricId: string,
     appUserId: string,
     fromTime?: string,

@@ -83,7 +83,7 @@ describe('UIS Admin Client', () => {
     const client = new UISAdminClient(TEST_APP_TOKEN, TEST_JWT, {
       fetch: f,
     });
-    const resp = await client.listCommonMetricforAppUser(
+    const resp = await client.getCommonMetricDataForAppUser(
       metricId,
       TEST_APP_USER_ID,
       fromTime,
