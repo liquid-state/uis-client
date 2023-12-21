@@ -65,10 +65,10 @@ export type DailyStep = {
   user_id: string;
   source_type: 'mobile-app' | 'integration';
   source_id: string;
-  health_source_name: string,
-  health_source_id: string,
-  health_source_record_id: string,
-  value: BigInteger,
+  health_source_name: string;
+  health_source_id: string;
+  health_source_record_id: string;
+  value: BigInteger;
   [k: string]: unknown;
 };
 
