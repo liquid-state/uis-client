@@ -50,18 +50,30 @@ export type UpdateFileData = {
 };
 
 export type EngagementEvent = {
-  timestamp: string;
-  userId: string;
-  sourceType: 'mobile-app' | 'integration';
-  sourceId: string;
-  engagementType: 'app-content' | 'dashboard-content';
-  contentId: string;
-  contentType: 'document' | 'form' | 'message';
+  time: string;
+  user_id: string;
+  source_type: 'mobile-app' | 'integration';
+  source_id: string;
+  engagement_type: 'app-content' | 'dashboard-content';
+  content_id: string;
+  content_type: 'document' | 'form' | 'message';
+  [k: string]: unknown;
+};
+
+export type DailyStep = {
+  date: string;
+  user_id: string;
+  source_type: 'mobile-app' | 'integration';
+  source_id: string;
+  health_source_name: string,
+  health_source_id: string,
+  health_source_record_id: string,
+  value: BigInteger,
   [k: string]: unknown;
 };
 
 export type CommonMetricDataResponse = {
   count: number;
-  results: EngagementEvent[];
+  results: EngagementEvent[] | DailyStep[];
   next_offset?: number;
 };
